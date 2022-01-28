@@ -23,7 +23,7 @@ export async function main(ns) {
             //Delete Loop.
             //If 'var ram' is greater than the current servers' ram, and the number of servers is equal to or less than the server limit of 25; deletes all servers until a == 0.
             //Should move onto the Purchase server while loop once a == 0.
-            if ( (ns.getPurchasedServerMaxRam() < ram) && (a <= 25) && (a !== 0) && (e !== 25) && (ns.getPurchasedServerCost(ram) !== Number.POSITIVE_INFINITY) ){
+            else if ( (ns.getPurchasedServerMaxRam() < ram) && (a <= 25) && (a !== 0) && (e !== 25) && (ns.getPurchasedServerCost(ram) !== Number.POSITIVE_INFINITY) ){
                 ns.tprint("Deleting Servers");
                 ns.killall("pserv-" + e);
                 ns.deleteServer("pserv-" + e);
@@ -36,7 +36,7 @@ export async function main(ns) {
         //While loop that purchases servers until the limit is reached (25 server limit) and if 'var a' = 0 (No purchased servers).
         while ( ( i < ns.getPurchasedServerLimit() ) && (a == 0) ) {
             //Only purchases servers if the home server can afford it, and if the ServerCost(ram) does not return infinity. 
-            if ( (ns.getServerMoneyAvailable("home") > ns.getPurchasedServerCost(ram) * 25) && (ns.getPurchasedServerCost(ram) !== Number.POSITVE_INFINITY) ) {
+            if ( (ns.getServerMoneyAvailable("home") > ns.getPurchasedServerCost(ram) * 25) ) {
                 //This executes the purchase command, and names the server at the same time.
                 ns.purchaseServer("pserv-" + i, ram);
                 //This writes to the terminal.
@@ -47,18 +47,19 @@ export async function main(ns) {
             }
             else if (ns.getServerMoneyAvailable("home") < ns.getPurchasedServerCost(ram) * 25) {
                 //1. Returns error code if ServerCost(ram) === Infinity
-                if (ns.getPurchasedServerCost(ram) === Number.POSITVE_INFINITY) {
+                if (ns.getPurchasedServerCost(ram) !== Number.POSITVE_INFINITY) {
+                    ns.tprint("Need " + ((ns.getPurchasedServerCost(ram) * 25) - ns.getServerMoneyAvailable("home")) + " To Purchase All Servers.")
+                    ns.tprint("Try running dontp00rman.script!");
+                    ns.tprint("Trying again in 1 minute.")
+                    await ns.sleep(60000)
+                }
+                //2. Will print the money needed to complete a full purchase.
+                else if (ns.getPurchasedServerCost(ram) === Number.POSITVE_INFINITY) {
                     ns.tprint("Server Size Error, cost = infinity!")
                     ns.tprint("Adjust ram size. Killing script now")
                     ns.kill("PurchaseServers.js", "home");
                 }
-                //2. Will print the money needed to complete a full purchase.
-                if (ns.getPurchasedServerCost(ram) !== Number.POSITVE_INFINITY) {
-                    ns.tprint("Need " + ((ns.getPurchasedServerCost(ram) * 25) - ns.getServerMoneyAvailable("home")) + " To Purchase All Servers.")
-                    ns.tprint("Try running dontp00rman.script!");
-                }
-                ns.tprint("Trying again in 1 minute.")
-                await ns.sleep(60000)
+
             }
         }
 }
